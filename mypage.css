@@ -1,0 +1,22 @@
+body { background-color: #ffe24f }
+iframe { width: 100%; aspect-ratio: 16/9 }
+#main-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 960px;
+  background-color: #ff8000;
+  font-size: 24px
+}
+#content {
+  background-color: white;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+}
+#header {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+  font-size: 50px;
+  text-align: right;
+}
