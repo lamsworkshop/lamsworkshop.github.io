@@ -10,7 +10,7 @@ class PiZeroCar {
                         {
                             "opcode": "connect",
                             "blockType": "Boolean",
-                            "text": "connect to PiZeroCar @ [url]",
+                            "text": "connect to PiZeroCar @[url]",
                             "arguments": {
                                 "url": {
                                     "type": "string",
