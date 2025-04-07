@@ -23,7 +23,7 @@ class PiZeroCar {
     }
     
     connect({url}) {
-        this.WS = new WebSocket("http://"+url+":8765");
+        this.WS = new WebSocket("ws://"+url+":8765");
         var done = false;
         this.WS.onerror = function() { done = true; }    
         this.WS.onopen = function() { done = true; }
