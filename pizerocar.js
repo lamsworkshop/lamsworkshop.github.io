@@ -9,7 +9,7 @@ class PiZeroCar {
             "blocks": [
                         {
                             "opcode": "connect",
-                            "blockType": "reporter",
+                            "blockType": "command",
                             "text": "connect to PiZeroCar @ [url]",
                             "arguments": {
                                 "url": {
@@ -23,7 +23,7 @@ class PiZeroCar {
     }
     
     connect({url}) {
-        return "http://"+url+":8765"
+        this.WS = new WebSocket("http://"+url+":8765");
     }
     
 }
