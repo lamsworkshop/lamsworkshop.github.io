@@ -9,8 +9,19 @@ class PiZeroCar {
             "blocks": [
                         {
                             "opcode": "connect",
-                            "blockType": "Boolean",
+                            "blockType": "command",
                             "text": "connect to PiZeroCar",
+                        },
+                        {
+                            "opcode": "send",
+                            "blockType": "command",
+                            "text": "send [msg]",
+                            "arguments": {
+                                "msg": {
+                                    "type": "string",
+                                    "defaultValue": "hello"
+                                }
+                            }
                         },
                 ],
         };
@@ -18,10 +29,10 @@ class PiZeroCar {
     
     connect() {
         this.WS = new WebSocket("ws://localhost:9001");
-        var waiting = true;
-        this.WS.onerror = this.WS.onopen = function() { waiting = false; }
-        while (waiting);
-        return this.WS.readyState < 2;
+    }
+
+    send({msg}) {
+        this.WS.send(msg);
     }
     
 }
