@@ -10,7 +10,7 @@ class PiZeroCar {
                         {
                             "opcode": "connect",
                             "blockType": "reporter",
-                            "text": "connect to PiZeroCar @ ip: ",
+                            "text": "connect to PiZeroCar @ ip: [url]",
                             "arguments": {
                                 "url": {
                                     "type": "string",
