@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocker Client</title>
+<script>
+    const socket = new WebSocket('ws://192.168.50.183:8765');
+    socket.addEventListener('open', function (event) {
+        socket.send('Connection Established');
+    });
+
+    socket.addEventListener('message', function (event) {
+        console.log(event.data);
+    });
+    function contactServer() {
+        console.log("dsd");
+        socket.send("Initialize");
+    }
+</script>
+</head>
+<body>
+    <button onclick="contactServer()">Click Here</button>
+</body>
+</html>
