@@ -10,7 +10,7 @@ class PiZeroCar {
                         {
                             "opcode": "connect",
                             "blockType": "Boolean",
-                            "text": "connect to PiZeroCar @[url]",
+                            "text": "connect PiZeroCar @[url]",
                             "arguments": {
                                 "url": {
                                     "type": "string",
@@ -25,8 +25,7 @@ class PiZeroCar {
     connect({url}) {
         this.WS = new WebSocket("ws://"+url+":8765");
         var done = false;
-        this.WS.onerror = function() { done = true; }    
-        this.WS.onopen = function() { done = true; }
+        this.WS.onerror = this.WS.onopen = function() { done = true; }
         while (!done);
         return this.WS.readyState <= 1;
     }
