@@ -10,7 +10,7 @@ class PiZeroCar {
                         {
                             "opcode": "connect",
                             "blockType": "Boolean",
-                            "text": "connect to PiZeroCar",
+                            "text": "Connect to PiZeroCar",
                         },
                 ],
         };
