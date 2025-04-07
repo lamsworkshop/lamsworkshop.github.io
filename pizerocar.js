@@ -19,7 +19,8 @@ class PiZeroCar {
     connect() {
         this.WS = new WebSocket("ws://localhost:8765");
         var done = false;
-        this.WS.onerror = this.WS.onopen = function() { done = true; }
+        this.WS.onerror = function() { done = true; }
+        this.WS.onopen = function() { done = true; this.WS.send("OK"); }
         while (!done);
         return this.WS.readyState <= 1;
     }
