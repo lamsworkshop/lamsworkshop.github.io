@@ -10,7 +10,7 @@ class PiZeroCar {
                         {
                             "opcode": "connect",
                             "blockType": "Boolean",
-                            "text": "connect to PiZeroCar",
+                            "text": "Connect to PiZeroCar",
                         },
                 ],
         };
@@ -18,9 +18,10 @@ class PiZeroCar {
     
     connect() {
         this.WS = new WebSocket("ws://localhost:9001");
-        this.WS.onerror = function() {}
-        this.WS.onopen = function() { this.WS.send("Connected"); }
-        return true;
+        var done = false
+        this.WS.onerror = this.WS.onopen = function() { done = true; }
+        while (!done);
+        return this.WS.readyState < 2;
     }
     
 }
