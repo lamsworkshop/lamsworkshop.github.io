@@ -37,4 +37,4 @@ class PiZeroCar {
     
 }
 
-//Scratch.extensions.register(new PiZeroCar())
+Scratch.extensions.register(new PiZeroCar())
