@@ -4,22 +4,28 @@ class PiZeroCar {
     
     getInfo() {
         return {
-            id: 'PiZeroCar',
-            name: 'PiZeroCar',
-            blocks: [
+            'id': 'PiZeroCar',
+            'name': 'PiZeroCar',
+            'blocks': [
                         {
-                            opcode: 'connect',
-                            blockType: BlockType.COMMAND,
-                            text: 'connect to PiZeroCar',
+                            'opcode': 'connect',
+                            'blockType': 'command',
+                            'text': 'connect to PiZeroCar @ [ip]',
+                            'arguments': {
+                                'ip': {
+                                    'type': 'string',
+                                    'defaultValue': 'localhost'
+                                }
+                            }
                         },
                         {
-                            opcode: 'send',
-                            blockType: BlockType.COMMAND,
-                            text: 'send [msg]',
-                            arguments: {
-                                msg: {
-                                    type: ArgumentType.STRING,
-                                    defaultValue: 'hello'
+                            'opcode': 'send',
+                            'blockType': 'command',
+                            'text': 'send [msg]',
+                            'arguments': {
+                                'msg': {
+                                    'type': 'string',
+                                    'defaultValue': 'hello'
                                 }
                             }
                         },
@@ -27,8 +33,8 @@ class PiZeroCar {
         };
     }
     
-    connect() {
-        this.WS = new WebSocket('ws://localhost:9001');
+    connect({ip}) {
+        this.WS = new WebSocket('ws://'+ip+':9001');
     }
 
     send({msg}) {
@@ -37,4 +43,4 @@ class PiZeroCar {
     
 }
 
-Scratch.extensions.register(new PiZeroCar())
+//Scratch.extensions.register(new PiZeroCar())
