@@ -6,6 +6,8 @@ class PiZeroCar {
         return {
             'id': 'PiZeroCar',
             'name': 'PiZeroCar',
+            'color1': '#ff8000',
+            'color2': '#ffe24f',
             'blocks': [
                         {
                             'opcode': 'connect',
