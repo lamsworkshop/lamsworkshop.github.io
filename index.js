@@ -43,7 +43,7 @@ class PiZeroCar {
                 {
                     'opcode': 'pending',
                     'blockType': 'command',
-                    'text': 'Wheel [side] [pwm]',
+                    'text': 'Wheel [side] [pwm]%',
                     'arguments': {
                         side: {
                             'type': 'string',
@@ -51,7 +51,7 @@ class PiZeroCar {
                             'menu': 'left_right'
                         },
                         pwm: {
-                            'type': 'string',
+                            'type': 'number',
                             'defaultValue': '0'
                         }
                     }
@@ -59,7 +59,6 @@ class PiZeroCar {
             ],
             'menus': {
                 on_off: {
-                    'acceptReporters': true,
                     'items': ['ON', 'OFF']
                 },
                 left_right: {
