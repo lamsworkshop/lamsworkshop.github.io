@@ -43,8 +43,8 @@ class PiZeroCar {
             ],
             'menus': {
                 'on_off': {
-                    acceptReporters: true,
-                    items: ['ON', 'OFF']
+                    'acceptReporters': true,
+                    'items': ['ON', 'OFF']
                 }
             }
         };
