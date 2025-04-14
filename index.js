@@ -4,44 +4,35 @@ class PiZeroCar {
     
     getInfo() {
         return {
-            'id': 'PiZeroCar',
-            'name': 'PiZeroCar',
-            'color1': '#ff8000',
-            'color2': '#ffe24f',
+            'id': 'Pizar',
+            'name': 'Pizar',
+            'color1': '#155115',
+            'color2': '#000000',
             'blocks': [
                         {
                             'opcode': 'connect',
                             'blockType': 'command',
-                            'text': 'connect to PiZeroCar @ [ip]',
+                            'text': 'connect pizar @ [ip]',
                             'arguments': {
                                 'ip': {
                                     'type': 'string',
-                                    'defaultValue': 'localhost'
+                                    'defaultValue': 'pizar.local'
                                 }
                             }
                         },
                         {
-                            'opcode': 'send',
-                            'blockType': 'command',
-                            'text': 'send [msg]',
-                            'arguments': {
-                                'msg': {
-                                    'type': 'string',
-                                    'defaultValue': 'hello'
-                                }
-                            }
+                            'opcode': 'isReady',
+                            'blockType': 'boolean',
+                            'text': 'response',
                         },
                 ],
         };
     }
     
     connect({ip}) {
-        this.WS = new WebSocket('ws://'+ip+':9001');
     }
 
-    send({msg}) {
-        this.WS.send(msg);
-    }
+    isReady() { return false; }
     
 }
 
