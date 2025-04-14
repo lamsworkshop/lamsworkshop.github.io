@@ -29,7 +29,7 @@ class PiZeroCar {
                     'text': 'replied',
                 },
                 {
-                    'opcode': 'pending',
+                    'opcode': 'led',
                     'blockType': 'command',
                     'text': 'LED [state]',
                     'arguments': {
@@ -41,7 +41,7 @@ class PiZeroCar {
                     }
                 },
                 {
-                    'opcode': 'pending',
+                    'opcode': 'pwm',
                     'blockType': 'command',
                     'text': 'Wheel [side] [pwm]%',
                     'arguments': {
@@ -68,12 +68,15 @@ class PiZeroCar {
         };
     }
     
-    connect({ip}) {
+    connect(ip) {
+        console.log(ip);
     }
 
     isReady() { return false; }
 
-    pending(){}
+    led(state){console.log(state);}
+
+    pwm(side, pwm){console.log(size);}
 }
 
 Scratch.extensions.register(new PiZeroCar())
