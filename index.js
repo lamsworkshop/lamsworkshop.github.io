@@ -26,9 +26,27 @@ class PiZeroCar {
                         {
                             'opcode': 'isReady',
                             'blockType': 'Boolean',
-                            'text': 'response',
+                            'text': 'replied',
                         },
-                ],
+                        {
+                            'opcode': 'pending',
+                            'blockType': 'command',
+                            'text': 'LED [state]',
+                            'arguments': {
+                                'state': {
+                                    'type': 'string',
+                                    'defaultValue': 'OFF'
+                                    'menu': 'on_off'
+                                }
+                            }
+                        }
+            ],
+            'menus': {
+                'on_off': {
+                    acceptReporters: true,
+                    items: ['ON', 'OFF']
+                }
+            }
         };
     }
     
@@ -36,7 +54,8 @@ class PiZeroCar {
     }
 
     isReady() { return false; }
-    
+
+    pending(){}
 }
 
 Scratch.extensions.register(new PiZeroCar())
