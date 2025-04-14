@@ -17,7 +17,7 @@ class PiZeroCar {
                             'blockType': 'command',
                             'text': 'connect pizar @ [ip]',
                             'arguments': {
-                                'ip': {
+                                ip: {
                                     'type': 'string',
                                     'defaultValue': 'pizar.local'
                                 }
@@ -33,16 +33,16 @@ class PiZeroCar {
                             'blockType': 'command',
                             'text': 'LED [state]',
                             'arguments': {
-                                'state': {
+                                state: {
                                     'type': 'string',
-                                    'defaultValue': 'OFF'
+                                    'defaultValue': 'OFF',
                                     'menu': 'on_off'
                                 }
                             }
                         }
             ],
             'menus': {
-                'on_off': {
+                on_off: {
                     'acceptReporters': true,
                     'items': ['ON', 'OFF']
                 }
