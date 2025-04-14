@@ -12,39 +12,58 @@ class PiZeroCar {
             'color2': '#000000',
             'blockIconURI': blockIconURI,
             'blocks': [
-                        {
-                            'opcode': 'connect',
-                            'blockType': 'command',
-                            'text': 'connect pizar @ [ip]',
-                            'arguments': {
-                                ip: {
-                                    'type': 'string',
-                                    'defaultValue': 'pizar.local'
-                                }
-                            }
-                        },
-                        {
-                            'opcode': 'isReady',
-                            'blockType': 'Boolean',
-                            'text': 'replied',
-                        },
-                        {
-                            'opcode': 'pending',
-                            'blockType': 'command',
-                            'text': 'LED [state]',
-                            'arguments': {
-                                state: {
-                                    'type': 'string',
-                                    'defaultValue': 'OFF',
-                                    'menu': 'on_off'
-                                }
-                            }
+                {
+                    'opcode': 'connect',
+                    'blockType': 'command',
+                    'text': 'connect pizar @ [ip]',
+                    'arguments': {
+                        ip: {
+                            'type': 'string',
+                            'defaultValue': 'pizar.local'
                         }
+                    }
+                },
+                {
+                    'opcode': 'isReady',
+                    'blockType': 'Boolean',
+                    'text': 'replied',
+                },
+                {
+                    'opcode': 'pending',
+                    'blockType': 'command',
+                    'text': 'LED [state]',
+                    'arguments': {
+                        state: {
+                            'type': 'string',
+                            'defaultValue': 'OFF',
+                            'menu': 'on_off'
+                        }
+                    }
+                },
+                {
+                    'opcode': 'pending',
+                    'blockType': 'command',
+                    'text': 'Wheel [side] [pwm]',
+                    'arguments': {
+                        side: {
+                            'type': 'string',
+                            'defaultValue': 'LEFT',
+                            'menu': 'left_right'
+                        },
+                        pwm: {
+                            'type': 'string',
+                            'defaultValue': '0'
+                        }
+                    }
+                }
             ],
             'menus': {
                 on_off: {
                     'acceptReporters': true,
                     'items': ['ON', 'OFF']
+                },
+                left_right: {
+                    'items': ['LEFT', 'RIGHT']
                 }
             }
         };
