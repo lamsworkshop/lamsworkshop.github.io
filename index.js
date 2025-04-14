@@ -76,7 +76,7 @@ class PiZeroCar {
 
     led(state){console.log(state);}
 
-    pwm(side, pwm){console.log(size);}
+    pwm(side, pwm){console.log(side);console.log(pwm);}
 }
 
 Scratch.extensions.register(new PiZeroCar())
