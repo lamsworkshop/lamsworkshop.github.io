@@ -24,9 +24,9 @@ class PiZeroCar {
                     }
                 },
                 {
-                    'opcode': 'isReady',
-                    'blockType': 'Boolean',
-                    'text': 'replied',
+                    'opcode': 'close',
+                    'blockType': 'command',
+                    'text': 'close connection',
                 },
                 {
                     'opcode': 'led',
@@ -55,6 +55,51 @@ class PiZeroCar {
                             'defaultValue': '0'
                         }
                     }
+                },
+                {
+                    'opcode': 'servo',
+                    'blockType': 'command',
+                    'text': 'Servo [num] [deg]',
+                    'arguments': {
+                        num: {
+                            'type': 'number',
+                            'defaultValue': '0',
+                            'menu': 'octave'
+                        },
+                        deg: {
+                            'type': 'number',
+                            'defaultValue': '90'
+                        }
+                    }
+                },
+                {
+                    'opcode': 'trigger',
+                    'blockType': 'command',
+                    'text': 'read [device]',
+                    'arguments': {
+                        device: {
+                            'type': 'string',
+                            'defaultValue': 'floor sensors',
+                            'menu': 'devices'
+                        }
+                    }
+                },
+                {
+                    'opcode': 'read',
+                    'blockType': 'reporter',
+                    'text': '[device]',
+                    'arguments': {
+                        device: {
+                            'type': 'string',
+                            'defaultValue': 'floor sensors',
+                            'menu': 'devices'
+                        }
+                    }
+                },
+                {
+                    'opcode': 'isReady',
+                    'blockType': 'Boolean',
+                    'text': 'replied',
                 }
             ],
             'menus': {
@@ -63,6 +108,17 @@ class PiZeroCar {
                 },
                 left_right: {
                     'items': ['LEFT', 'RIGHT']
+                },
+                octave: {
+                    'items': ['0', '1', '2', '3', '4', '5', '6', '7']
+                },
+                devices: {
+                    'items': [
+                        'floor sensors',
+                        'left wheel counter',
+                        'right wheel counter',
+                        'sonar detector'
+                    ]
                 }
             }
         };
@@ -72,11 +128,19 @@ class PiZeroCar {
         console.log(ip);
     }
 
+    close(){}
+
+    trigger(device){}
+
+    read(device){}
+
     isReady() { return false; }
 
     led(state){console.log(state);}
 
     pwm(side, pwm){console.log(side);console.log(pwm);}
+
+    servo(num, deg){}
 }
 
 Scratch.extensions.register(new PiZeroCar())
