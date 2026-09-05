@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>只需一點點 廣東話卡拉OK字幕生成器</title>
+<meta charset="utf-8">
+<meta name="keywords" content="lyrics, srt, karaoke">
+<style>
+[data-timestamp].lyric::after, [data-timestamp].head::after, [data-timestamp]:hover::after {
+	content: attr(data-timestamp);
+}
+button {
+	font-size: 12px;
+	white-space: pre-wrap;
+}
+button.play {
+	font-size: 20px;
+	width: 100%;
+}
+button.head {
+	width: 89px;
+	text-align: right;
+}
+button.lyric {
+	text-align: left;
+	flex-grow: 1;
+}
+button.target { border: 1px solid; }
+</style>
+<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script type="text/javascript">
+function openLyric(event) {
+	const file = event.target.files[0];
+	if (!file) return;
+	const reader = new FileReader();
+	reader.onload = loadLyric;
+	reader.readAsText(file);
+}
+function writeTarget() {
+	target.dataset.timestamp = Math.floor(wavesurfer.getCurrentTime() * 1000);
+}
+function split(event) {
+	target.classList.remove('target');
+	target = dummy;
+	if (event.target.innerText !== '') {
+		const delay
+		= (wavesurfer.isPlaying()) ? document.getElementById('delay').value : 0;
+		splitLyric(event.target, wavesurfer.getCurrentTime() * 1000 - delay);
+	}
+	if (event.target.innerText === '') {
+		target = event.target;
+		target.classList.add('target');
+	}
+	if ('timestamp' in event.target.dataset) {
+		wavesurfer.setTime(event.target.dataset.timestamp / 1000);
+		light();
+	}
+}
+function splitLyric(lyric, timestamp) {
+	const str = lyric.innerText;
+	if (str !== '') {
+		const button = document.createElement('button');
+		button.dataset.timestamp = timestamp;
+		button.addEventListener('mousedown', seekTo);
+		lyric.before(button);
+		button.innerText = str[0];
+		if (str[1] === ' ') button.innerText += ' ';
+		lyric.innerText = str.substring(1).trim();
+	} else lyric.dataset.timestamp = timestamp;
+}
+function seekTo(event) {
+	target.classList.remove('target');
+	target = event.target;
+	target.classList.add('target');
+	if ('timestamp' in target.dataset) {
+		wavesurfer.setTime(target.dataset.timestamp / 1000);
+		light();
+	}
+}
+function saveFile() {
+	let data = document.getElementById('fileName').innerText;
+	for (const lyric of Lyrics.children)
+		if (lyric.innerText !== ' ')
+			data += '\n' + extractStamps(lyric).join(',');
+	data = data.trim() + '\n[LYRIC]';
+	for (const lyric of Lyrics.children) {
+		const str = lyric.innerText.replace(/\n/g, '');
+		data += '\n' + ((str === ' ') ? '' : str);
+	}
+	const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(blob);
+	link.download = 'lyric.lrc';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(link.href);
+}
+function generateSRT() {
+	const eolButtons = Lyrics.querySelectorAll('.lyric');
+	let valid = false;
+	if (eolButtons.length > 0)
+		valid = 'timestamp' in eolButtons[eolButtons.length - 1].dataset;
+	for (const button of eolButtons) if (button.innerText !== '') valid = false;
+	if (!valid) {
+		alert('資料不足:\n1. 所有字皆須配上時間\n2. 歌曲結尾亦須注明時間');
+		return;
+	}
+	const start = [];
+	let data = '';
+	let n = 1;
+	for (const div of Lyrics.children) {
+		if (div.innerText === ' ') continue;
+		start.push(div.querySelector('[data-timestamp]').dataset.timestamp);
+	}
+	for (const div of Lyrics.children) {
+		if (div.innerText === ' ') continue;
+		start.shift();
+		const buttons = div.children;
+		const length = buttons.length;
+		const lyric = div.innerText.trim().replace(/\n/g, '');
+		if ('timestamp' in buttons[0].dataset) {
+			data += `${n++}`;
+			data += `\n${hmsm(buttons[0].dataset.timestamp)} --> ${hmsm(buttons[1].dataset.timestamp)}`; 
+			data += `\n${lyric}\n\n`;
+		}
+		for (let i = 1; i < length - 2; i++) {
+			data += `${n++}`;
+			data += `\n${hmsm(buttons[i].dataset.timestamp)} --> ${hmsm(buttons[i+1].dataset.timestamp)}`; 
+			let str = `\n<font color="${color}">`;
+			for (const button of buttons) {
+				str += button.innerText;
+				if (button === buttons[i]) str += '</font>';
+			}
+			data += `${str}\n\n`;
+		}
+		const end = ('timestamp' in buttons[length-1].dataset) ? buttons[length-1].dataset.timestamp : start[0];
+		data += `${n++}`;
+		data += `\n${hmsm(buttons[length - 2].dataset.timestamp)} --> ${hmsm(end)}`; 
+		data += `\n<font color="${color}">${lyric}</font>\n\n`;
+	}
+	const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(blob);
+	link.download = 'karaoke.srt';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(link.href);
+}
+function hmsm(t) {
+	const mmm = String(t % 1000).padStart(3, '0');
+	const seconds = Math.floor(t / 1000);
+	const SS = String(seconds % 60).padStart(2, '0');
+	const MM = String(Math.floor(seconds / 60)).padStart(2, '0');
+	return `00:${MM}:${SS},${mmm}`;
+}
+function splitButton(stamps, button) {
+	if (!button.classList.contains('lyric')) return;
+	// optional head time is located at end of timestamps
+	if (Number(stamps[0]) > Number(stamps.at(-1)))
+		button.previousElementSibling.dataset.timestamp = stamps.pop();
+	for (const stamp of stamps) splitLyric(button, stamp);
+}
+function extractStamps(lyric) {
+	const stamps = [];
+	for (let i = 1; i < lyric.children.length; i++) {
+		if ('timestamp' in lyric.children[i].dataset)
+			stamps.push(lyric.children[i].dataset.timestamp);
+	}
+	if ('timestamp' in lyric.children[0].dataset)
+		stamps.push(lyric.children[0].dataset.timestamp);
+	return stamps;
+}
+function copyVerse() {
+	if (target === dummy) { alert("尚未點選來源"); return; }
+	let source = target.parentElement;
+	let dest = null;
+	for (const div of Lyrics.children)
+		if ((div.children.length==2)&&('timestamp' in div.children[0].dataset))
+			if (dest === null) dest = div;
+	if (dest === null) { alert("找不到接收點:\n1. 整行歌詞未配置時間\n2. 行起始時間設定為第一字的時間\n3. 首先滿足以上條件"); return; }
+	const offset	= Number(dest.children[0].dataset.timestamp) 
+					- Number(source.children[1].dataset.timestamp);
+	while ((dest!==null)&&(source!==null)&&(source.children.length>0)) {
+		const stamps = extractStamps(source);
+		for (let i = 0; i < stamps.length; i++)
+			stamps[i] = Number(stamps[i]) + offset;
+		mergeDiv(dest);
+		splitButton(stamps, dest.children[1]);
+		source = source.nextElementSibling;
+		dest = dest.nextElementSibling;
+	}
+}
+function mergeLine() {
+	if (!confirm("確認删除")) return;
+	if (target === dummy) return;
+	const parent = target.parentElement;
+	target.classList.remove('target');
+	target = dummy;
+	mergeDiv(parent);
+}
+function mergeDiv(div) {
+	const last = div.children[div.children.length - 1];
+	last.innerText = div.innerText.replace(/\n/g, '');
+	while (div.children[1] !== last) div.children[1].remove();
+	delete last.dataset.timestamp;
+	delete div.children[0].dataset.timestamp;
+}
+var timerId = null;
+var color = '#00FFFF';
+function light() {
+	const time = Math.floor(wavesurfer.getCurrentTime() * 1000);
+	document.getElementById('currentTime').innerText
+	= `把[${time}]記下來`;
+	if (timerId !== null) clearTimeout(timerId);
+	const buttons = Lyrics.querySelectorAll('[data-timestamp]');
+	let i;
+	for (i = buttons.length - 1; i >= 0; i--)
+		if (time >= Number(buttons[i].dataset.timestamp)) break;
+	const button = (i >= 0) ? buttons[i] : dummy;
+	if (button !== lit) {
+		lit.style.backgroundColor = '';
+		lit = button;
+		lit.style.backgroundColor = color;
+	}
+	if ((i + 1) < buttons.length) {
+		const delay = Number(buttons[i + 1].dataset.timestamp) - time;
+		timerId = setTimeout(light, delay);
+	}
+}
+function openAudio(event) {
+	const file = event.target.files[0];
+	if (file) {
+		const fileUrl = URL.createObjectURL(file);
+		wavesurfer.load(fileUrl);
+	}
+}
+function loadLyric(event) {
+	const lyrics = event.target.result.trim().split('\n');
+	Lyrics.style.height = "500px";
+	Lyrics.replaceChildren();
+	for (const lyric of lyrics) {
+		const div = document.createElement('div');
+		Lyrics.appendChild(div);
+		if (lyric === '') {
+			div.innerText = ' ';
+			div.style.whiteSpace = "pre-wrap";
+		} else {
+			div.style.display = "flex";
+			const button = document.createElement('button');
+			const head = document.createElement('button');
+			head.classList.add('head');
+			button.classList.add('lyric');
+			button.innerText = lyric;
+			button.addEventListener('mousedown', split);
+			head.addEventListener('mousedown', seekTo);
+			div.appendChild(head);
+			div.appendChild(button);
+		}
+	}
+}
+function uploadCSV() {
+	const input = document.createElement('input');
+	input.type = "file";
+	input.accept = ".csv";
+	input.onchange = openCSV;
+	document.body.appendChild(input);
+	input.click();
+	document.body.removeChild(input);
+}
+function openCSV(event) {
+	const file = event.target.files[0];
+	if (!file) return;
+	const reader = new FileReader();
+	reader.onload = loadCSV;
+	reader.readAsText(file);
+}
+function loadCSV(event) {
+	const records = event.target.result.trim().split('\n');
+	let i = 0;
+	for (const div of Lyrics.children) {
+		if (i == records.length) break;
+		if (div.children.length == 0) continue;
+		const timestamps = records[i++].split(',');
+		if ((div.children.length == 2)&&(timestamps[0] !== ''))
+			splitButton(timestamps, div.children[1]);
+	}
+}
+function downloadCSV() {
+	let data = '';
+	for (const lyric of Lyrics.children)
+		if (lyric.innerText !== ' ')
+			data += extractStamps(lyric).join(',') + '\n';;
+	if (data === '') {
+		alert("無可下載");
+		return;
+	}
+	const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+	const link = document.createElement('a');
+	link.href = URL.createObjectURL(blob);
+	link.download = 'karaoke.csv';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(link.href);
+}
+</script>
+</head>
+<body>
+<h1 style="text-align: center;">只需一點點 - 廣東話卡拉OK字幕生成器</h1>
+<label for="audio">音頻</label>
+<input type="file" name="audio" accept="audio/*" onchange="openAudio(event)">
+<button onclick="uploadCSV()">上傳.csv紀錄檔</button>
+<button onclick="mergeLine()" style="width: 150px">删除一行紀錄</button>
+<button onclick="copyVerse()">複製段落</button>
+<label title="從聽見聲音到點擊滑鼠的時間">反應時間:</label>
+<select id="delay">
+<option value="100">100ms</option>
+<option value="200">200ms</option>
+<option value="300" selected>300ms</option>
+<option value="400">400ms</option>
+<option value="500">500ms</option>
+</select>
+<button onclick="generateSRT)">生成.srt字幕檔</button>
+<br>
+<label for="lyric">歌詞</label>
+<input type="file" name="lyric" accept=".lrc,.txt" onchange="openLyric(event)">
+<button id="save" onclick="downloadCSV()">下載.csv紀錄檔</button>
+<button id="currentTime" style="width: 150px" onclick="writeTarget()">把[時間]記下來</button>
+<input type="color" id="color" value="#00FFFF" style="width: 64px;" onchange="color=this.value;">
+<div id="waveform"></div>
+<button class="play" onclick="wavesurfer.playPause()">播放▶️ / ⏸️暫停</button>
+<div style="display: flex;">
+<button class="head" style="background-color: silver">行起始時間</button>
+<button class="lyric" style="background-color: silver">播放歌曲，隨歌聲點擊對應歌詞，便可把[時間]依次記下來。餘下 空白按鈕 可用來記錄[行結尾時間]。</button>
+</div>
+<div id="lyrics" style="overflow-y: auto;"></div>
+<pre id="debug"></pre>
+<h2>簡介</h2>
+<p>
+這個網頁能生成卡拉OK歌詞字幕SRT文檔。適用於VLC播放器。用戶只需提供音頻檔案與歌詞，和靈活的手指尖，隨歌曲點擊滑鼠，便可生成SRT文檔。
+</p>
+<h2>事前凖備</h2>
+<ul>
+<li>
+音頻檔：清唱版。一些網頁如 vocalremover.org, x-minus.pro 能把背景音樂移除。
+</li>
+<li>
+歌詞檔：純文字。不含標點符號。空白符可以，但會被忽略。連續空白會省略為一個空白。將歌詞分成段落，以空白行相隔。
+</li>
+<li>
+反應時間：從聽見聲音到點擊滑鼠的時間。按個人質素設置。
+</li>
+</ul>
+<h2>按鈕的概念</h2>
+當載入歌詞後，網頁會產生兩類按鈕。
+<ul>
+<li>
+行起始按鈕：在每行的最左端，用來記錄每行歌詞的起始時間。可點選。
+</li>
+<li>
+歌詞按鈕：在每行的最右端，內含歌詞。一點擊，即分裂。
+</li>
+</ul>
+當點擊行歌詞按鈕，其第一字將分裂出去，直至清空所有文字。因而產生兩類按鈕。
+<ul>
+<li>
+文字按鈕：在產生時便記下了[時間]。可點選。
+</li>
+<li>
+行結尾按鈕：當歌詞按鈕耗盡文字時，留在行最右端的空白按鈕。用來記錄行結尾時間。可點選。
+</li>
+</ul>
+點選了的按鈕皆可記錄或修改[時間]。當點選有紀錄的按鈕，歌曲跳至該[時間]播放。當歌曲在播放時，按鈕會因應時間改變顏色，有如卡拉OK。
+<h2>操作流程</h2>
+<ul>
+<li>
+載入音頻與歌詞。播放歌曲。
+</li>
+<li>
+隨歌聲逐行點擊歌詞按鈕。
+</li>
+<li>
+追不上音樂或出了差錯，可後補修改。
+</li>
+<li>
+按需要加上行起始與行結尾時間。但 最終行 的結尾時間是必須記下來的。
+</li>
+<li>
+需要休息的話，下載csv紀錄檔。
+</li>
+<li>
+當消化了所有[歌詞按鈕]時，工作結束了。下載字幕檔。
+</li>
+</ul>
+<h2>複製段落</h2>
+歌曲音樂是經常重複的，所以複製段落能節省不少時間。首先來指定複製的目的地。
+<ul>
+<li>
+該行只有起始與歌詞按鈕。沒有文字按鈕。
+</li>
+<li>
+行起始按鈕須有時間紀錄。注意。[時間]須設定為第一字的時間。
+</li>
+<li>
+首先符合以上條件的行。
+</li>
+</ul>
+之後點選來源地的起始行。段落以 空白行 作結。
+<h2>後記</h2>
+<p>聲紋顯示：wavesurfer</p>
+<p>vlc 播放器只接受以英文命名的srt文檔。廣東歌.canton.mp4 可配 canton.srt 但不接受 廣東歌.canton.srt</p>
+<p>nodelist 並不是 array。for .. of loop 比 forEach() 好用。</p>
+<a href="https://github.com/lamsworkshop/vlc-karaoke">vlc-karaoke</a>
+<script>
+const dummy = document.createElement('div');
+const Debug = document.getElementById('debug');
+const Lyrics = document.getElementById('lyrics');
+const wavesurfer = WaveSurfer.create({
+	container: '#waveform',
+	waveColor: '#4F4A85',
+	progressColor: '#383351',
+	height: 89,
+	minPxPerSec: 64
+});
+var target = dummy;
+var lit = dummy;
+wavesurfer.on('interaction', light);
+</script>
+</body>
+</html>
