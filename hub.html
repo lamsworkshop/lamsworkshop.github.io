@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>IR Remote Hub</title>
+<meta charset="UTF-8">
+<style>
+button { font-size: 36px; padding: 20px; }
+.container { display: flex; gap: 20px; }
+.remote { margin: 20px; width: 65%; padding: 50px; user-select: none; }
+</style>
+<script type="text/javascript" src="ir-encode.js"></script>
+<script type="text/javascript" src="ir-decode.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+var ip = urlParams.get('ip');
+if (ip === null) ip = prompt("Please enter ip: ", "192.168.");
+const socket = new WebSocket(`ws://${ip}:9001`);
+socket.binaryType = "arraybuffer";
+socket.addEventListener('open', (event) => {
+	document.getElementById('learn').disabled = false;
+	document.getElementById('connect').disabled = false;
+	document.getElementById('remote').disabled = false;
+	document.getElementById('connect').innerText = "DISCONNECT";
+});
+socket.addEventListener('close', (event) => {
+	document.getElementById('learn').disabled = true;
+	document.getElementById('connect').disabled = false;
+	document.getElementById('remote').disabled = true;
+	document.getElementById('connect').innerText = "RECONNECT";
+});
+socket.addEventListener('error', (event) => { alert('error'); });
+socket.addEventListener('message', (event) => {
+	if (event.data instanceof ArrayBuffer) {
+		const byteArray = new Uint8Array(event.data);
+		const array = decode_ir(byteArray);
+		let string = `<b>${array[0]}</b>`;
+		for (let i = 1; i < array.length; i++) {
+			if (i & 1) string += `,${array[i]}`;
+			else string += `,<b>${array[i]}</b>`;
+		}
+		document.getElementById('raw').innerHTML = string;
+		string = decode_array2string(array);
+		const temp = string.replaceAll("M", "W<br>");
+		string = temp.replaceAll("-", "<br>");
+		document.getElementById('map').innerHTML = string;
+		document.getElementById('message').innerText = decode_array(array);
+		document.getElementById('learn').disabled = false;
+		document.getElementById('remote').disabled = false;
+	}
+});
+function keyDown(c) {
+	if (!document.getElementById("remote").disabled)
+		socket.send(encode_rc6(4, c));
+}
+function keyUp() {
+	if (!document.getElementById("remote").disabled)
+		socket.send(new ArrayBuffer(0));
+}
+function learn() {
+	document.getElementById('learn').disabled = true;
+	document.getElementById("remote").disabled = true;
+	socket.send('');
+}
+function connect() {
+	let connect = document.getElementById("connect");
+	connect.disabled = true;
+	if (connect.innerText === "RECONNECT") {
+		let string = window.location.href;
+		const i = string.indexOf('html');
+		string = string.substring(0, i);
+		window.location.href = `${string}html?ip=${ip}`;
+	} else socket.close(1000, "Client closing connection");
+}
+</script>
+</head>
+<body class="container">
+<div id="map" style="padding:20px;background-color:cyan;"></div>
+<div style="flex:1;">
+ <p></p>
+ <div class="container">
+  <div style="flex:1;">
+   <button id="learn" disabled style="width:100%;" onclick="learn()">LEARN</button>
+  </div>
+  <div style="flex:1;">
+   <button id="connect" disabled style="width:100%;" onclick="connect()"></button>
+  </div>
+ </div>
+ <p id="message" style="font-size:36px;"></p>
+ <div id="raw" style="overflow-x:auto;font-size:36px;width:90vw;"> </div>
+ <p></p>
+ <fieldset id="remote" disabled style="text-align:center;">
+  <button class="remote" onpointerdown="keyDown(12)" ontouchend="keyUp()">POWER</button>
+  <button class="remote" onpointerdown="keyDown(63)" ontouchend="keyUp()">SOURCE</button>
+ </fieldset>
+</div>
+</body>
+</html>
